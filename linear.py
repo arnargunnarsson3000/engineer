@@ -2,6 +2,10 @@ from sympy.core.symbol import Symbol
 from sympy import simplify
 from sympy.core.numbers import Float
 
+__doc__ = """
+This is a tool for linear algebra. Supports many functions, determinant, inverse, row/column operations.
+So far only class is the matrix class, vector soon to be added.
+"""
 
 class matrix:
     """
@@ -142,7 +146,7 @@ class matrix:
         if not isinstance(power, int):
             raise SystemError("Matrix powers must be integers greater than or equal to -1")
         if power == -1:
-            return self.inverse2()
+            return self.inverse()
         if power < -1:
             raise SystemError("negative powers not defined for matrices, -1 only implies the matrix's inverse")
         else:
@@ -172,35 +176,6 @@ class matrix:
 
     # Matrix operations
     def inverse(self):
-        """
-        Matrix must be square!
-        :return: the inverse of the matrix, if it exists
-        """
-        mat = self.copy()
-        I = matrix(mat.n)
-        mat = mat.A
-        I = I.A
-        for i in range(len(mat)):
-            I[i] = self.divideRow(I[i], mat[i][i])
-            mat[i] = self.divideRow(mat[i], mat[i][i])
-            for j in range(i + 1, len(mat)):
-                if mat[j][i] != 0:
-                    I[j] = self.divideRow(I[j], mat[j][i])
-                    mat[j] = self.divideRow(mat[j], mat[j][i])
-                    I[j] = self.subRow(I[i], I[j])
-                    mat[j] = self.subRow(mat[i], mat[j])
-        for i in reversed(range(len(mat))):
-            I[i] = self.divideRow(I[i], mat[i][i])
-            mat[i] = self.divideRow(mat[i], mat[i][i])
-            for j in reversed(range(len(mat[j]) - 1)):
-                if mat[j][i] != 0 and i != j:
-                    I[j] = self.divideRow(I[j], mat[j][i])
-                    mat[j] = self.divideRow(mat[j], mat[j][i])
-                    I[j] = self.subRow(I[i], I[j])
-                    mat[j] = self.subRow(mat[i], mat[j])
-        return matrix(I)
-
-    def inverse2(self):
         A = self.copy().A
 
         n = len(A)
@@ -243,12 +218,12 @@ class matrix:
 
         return matrix(I)
 
+    #TODO: change reduce so it handles similarly to the new inverse function
     def reduce(self):
         """
         returns the row reduced echelon form of the matrix
         """
         A = self.copy().A
-
         for i in range(min(len(A),len(A[0]))):
             if A[i][i] != 0:
                 A[i] = self.divideRow(A[i], A[i][i])
@@ -282,6 +257,7 @@ class matrix:
             return matrix([[i] for i in self.A[0]])
         return A
 
+    #TODO: change det such that it always takes the path with most zeros
     def det(self):
         """
         Calculates the determinant of a matrix
@@ -310,6 +286,11 @@ class matrix:
             return det
 
     def adj(self):
+        """
+        Returns the adjugate of a matrix.
+        A**-1 = (1/det(A))*adj(A)
+        very slow for larger matrices, since finding determinant is very time consuming
+        """
         A = self.copy()
         for i in range(A.n):
             for j in range(A.m):
@@ -333,7 +314,12 @@ class matrix:
         """
         return self**-1*b
 
+    #TODO: diff is very bad, assumes that there is only 1 variable and it is present in each space in A, change this for more variables and not variables everywhere
     def diff(self):
+        """
+        When a matrix A is symbolic with a single variable, this differentiates the matrix
+        :return: Differential of A
+        """
         A = self.copy()
         for i in range(self.n):
             for j in range(self.m):
@@ -444,7 +430,13 @@ class matrix:
         A = matrix(A)
         return A
 
+    #TODO: change the input arguments
     def sub(self,*args):
+        """
+        With a symbolic matrix input numerical values for all the symbols
+        :param args: T-O-D-O
+        :return: numerical version of the symbolic matrix
+        """
         A = self.copy()
         for i in range(self.n):
             for j in range(self.m):
@@ -457,6 +449,11 @@ class matrix:
         return A
 
     def simplify(self):
+        """
+        Symplifies a symbolic matrix, for example one with a lot of trigonometry.
+        Simplifying takes a while, but gives much more accurate results, which may change drastically.
+        :return: Simplified symbolic version of matrix
+        """
         A = self.copy()
         for i in range(A.n):
             for j in range(A.m):
@@ -494,6 +491,11 @@ class matrix:
         return B
 
     def index(self, k):
+        """
+        Finds the index of key 'k' and returns location
+        :param k: number or symbol
+        :return: [column, line], supposed to resemble [x, y]
+        """
         for i in range(self.n):
             for j in range(self.m):
                 if self[i][j] == k:
@@ -501,12 +503,21 @@ class matrix:
         return None
 
     def rindex(self, k):
+        """
+        Just like index, but searching starts from the end and moves backwards
+        :param k: same as in index
+        :return: same as in index
+        """
         for i in reversed(range(self.n)):
             for j in reversed(range(self.m)):
                 if self[i][j] == k:
                     return [j, i]
 
     def mat2mat(self):
+        """
+        Probably useless, but changes a matrix to the copy/paste-able matlab code equivalent
+        :return: Matlab code of the matrix
+        """
         str = "["
         for i in range(self.n):
             for j in range(self.m):
@@ -519,21 +530,93 @@ class matrix:
         return str
 
     def tsum(self):
+        """
+        :return: Total sum of all numbers in a matrix
+        """
         tot = 0
         for i in range(self.n):
             for j in range(self.m):
                 tot += self[i][j]
         return tot
+
+#TODO: spice this class up
+class vector:
+    """
+    A vector class
+    """
+    def __init__(self, *args):
+        if len(args) == 1 and isinstance(args[0], int):
+            """
+            Initializes an vector of 0's
+            """
+            self.A = [0 for i in range(args[0])]
+            self.n = args[0]
+            self.vec = False
+        elif len(args) == 1 and isinstance(args[0], list):
+            """
+            Initializes vector of your liking
+            """
+            self.A = [i for i in args[0]]
+            self.n = len(self.A)
+            self.vec = False
+
+    def __mul__(self, other):
+        if isinstance(other, float) or isinstance(other, int):
+            temp = vector([other*i for i in self.A])
+            if self.vec:
+                temp.vec = True
+            return temp
+        elif isinstance(other, vector):
+            assert(self.vec != other.vec)
+            assert(self.n == other.n)
+            if self.vec:
+                temp = matrix(self.n, self.n)
+                for i in range(temp.n):
+                    for j in range(temp.n):
+                        temp[i][j] = self.A[i]*other.A[j]
+                return temp
+            else:
+                return sum([self.A[i]*other.A[i] for i in range(self.n)],0)
+
+    def __rmul__(self, other):
+        if isinstance(other, float) or isinstance(other, int):
+            temp = vector([other*i for i in self.A])
+            if self.vec:
+                temp.vec = True
+            return temp
+
+    def __add__(self, other):
+        assert (self.n == other.n)
+        assert (self.vec == other.vec)
+        temp = vector(self.n)
+        for i in range(self.n):
+            temp[i] = self.A[i] + other.A[i]
+        return temp
+        pass
+
+    def __sub__(self, other):
+        assert(self.n == other.n)
+        assert(self.vec == other.vec)
+        temp = vector(self.n)
+        for i in range(self.n):
+            temp[i] = self.A[i] - other.A[i]
+        return temp
+
+    def t(self):
+        temp = vector(self.A)
+        temp.vec = True
+        return temp
+
+
 def cross(a, b):
+    """
+    Cross product of 2 vectors
+    :return: axb
+    """
     return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]
 
 if __name__ == "__main__":
-    A = matrix(5)
-    print(A)
-    A = matrix([[10, 2, 1, 4], [1, 2, 2, 4], [1, 2, 4, 4], [1,2,4,3]])
-    b = A.delRow(1)
-    b = b.delCol(1)
-    b = matrix([[1,2,3,4]]).t()
+    a = vector(1)
 
 
 

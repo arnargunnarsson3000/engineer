@@ -275,8 +275,6 @@ class manipulator:
         d['Hmat'] = self.Hmat
         self.setup.append(d)
 
-
-
     def H2(self):
         return self.Hmat
 
