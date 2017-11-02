@@ -39,8 +39,7 @@ def Newton_Raphson2(eq, var, guess, cvar, cval, iterations=5):
         else:
             d[var[i]] = guess[c]
             c += 1
-    print(d)
-    print(J)
+
     for ii in range(iterations):
         phi = [i for i in eq]
         for j in range(len(phi)):

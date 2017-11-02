@@ -452,6 +452,14 @@ if __name__ =="__main__":
         temp = fillout(nums[i].A) + nums[i].A
         if matsum(temp) == nums[i].A.n*nums[i].A.m:
             nums[i].pos = [1,2,3,5,7,'-']
+            if lineV(nums[i].A):
+                nums[i].pos = [1]
+            else:
+                nums[i].pos = [2,3,5,7,'-']
+                if isMinus(nums[i].A):
+                    nums[i].pos = ['-']
+                else:
+                    nums[i].pos = [2,3,5,7]
         else:
             nums[i].pos = [0,4,6,8,9]
             if lineV(nums[i].A):
