@@ -286,34 +286,30 @@ class manipulator:
         return A
 
     def Jacobian(self):
-        O = [self.Hmat[i][-1] for i in range(self.Hmat.n-1)]
-        Jv = []
-        Jw = []
         o = []
         z = []
-        for i in range(len(self.setup)):
-            if i == 0:
-                o.append(O)
-            else:
-                o.append([O[i] - self.setup[i]['Hmat'][i][-1] for i in range(self.Hmat.n-1)])
+        on = [self.Hmat[i][-1] for i in range(self.Hmat.n-1)]
+        for i in range(self.nojoints+1):
             if i == 0:
                 z.append([0,0,1])
+                o.append([0,0,0])
             else:
-                z.append([self.setup[i]['Hmat'][i][2] for i in range(self.Hmat.n - 1)])
-        for i in range(len(z)):
-            if self.setup[i]['type'] == 'p':
-                Jv.append(z[i])
+                z.append([self.setup[i-1]['Hmat'][j][2] for j in range(self.Hmat.n-1)])
+                o.append([self.setup[i-1]['Hmat'][j][3] for j in range(self.Hmat.n-1)])
+        Jv = []
+        Jw = []
+        for i in range(1,self.nojoints+1):
+            if self.setup[i-1]['type'] == 'p':
+                Jv.append(z[i-1])
                 Jw.append([0,0,0])
             else:
-                Jv.append(linear.cross(z[i], o[i]))
-                Jw.append(z[i])
+                Jv.append(linear.cross(z[i-1], [on[j]-o[i-1][j] for j in range(len(on))]))
+                Jw.append(z[i-1])
         Jv = matrix(Jv).t()
         Jw = matrix(Jw).t()
-        J = Jv.copy()
-        for i in range(Jw.n):
-            J = J.appendRow(Jw[i])
-
-        return J
+        for each in Jw.A:
+            Jv = Jv.appendRow(each)
+        return Jv
 
 
 if __name__ == "__main__":

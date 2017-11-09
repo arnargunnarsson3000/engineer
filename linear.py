@@ -83,14 +83,23 @@ class matrix:
             assert(self.m == other.n)
             mat1 = self.A
             mat2 = other.A
-            mat3 = matrix(self.n, other.m)
-            for i in range(len(mat1)):
-                if isinstance(mat2[i], list):
-                    for j in range(len(mat2[i])):
-                        temp = 0
-                        for k in range(len(mat1[i])):
-                            temp += mat1[i][k] * mat2[k][j]
-                        mat3.A[i][j] = temp
+
+            try:
+                mat3 = matrix(self.n, other.m)
+                for i in range(len(mat1)):
+                    if isinstance(mat2[i], list):
+                        for j in range(len(mat2[i])):
+                            temp = 0
+                            for k in range(len(mat1[i])):
+                                temp += mat1[i][k] * mat2[k][j]
+                            mat3.A[i][j] = temp
+            except IndexError:
+                mat3 = matrix(other.n, self.m)
+                for i in range(mat3.n):
+                    for j in range(mat3.m):
+                        mat3[i][j] = sum([self[i][k] * other[j][k] for k in range(len(self[i]))], 0)
+                if mat3.n == 1 and mat3.m == 1:
+                    mat3 = mat3[0][0]
             if mat3.n == 1 and mat3.m == 1:
                 mat3 = mat3[0][0]
             return mat3

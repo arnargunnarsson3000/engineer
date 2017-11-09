@@ -50,6 +50,12 @@ def Lmatrix(A, num=None):
     str = str.replace('*','')
     return str
 
+def Lcases(A):
+    str = "\\begin{equation}\n\\begin{cases}\n"
+    for each in A:
+        str += " {}\\\\\n".format(each)
+    str += "\\end{cases}\n\\end{equation}\n"
+    return str
 
 if __name__ == "__main__":
     print(isnum('a'))
